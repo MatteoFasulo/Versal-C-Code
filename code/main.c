@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <time.h>
 #include "platform.h"
 #include "xil_printf.h"
 
@@ -17,6 +18,10 @@ typedef u32         uint32_t;
 #define ARMV8_PMUSERENR_ER      (1 << 3) /*  Event counter read enable */
 
 #define ARMV8_PMCNTENSET_EL0_ENABLE (1<<31) /* *< Enable Perf count reg */
+
+#define NUM_ACCESSES 1000
+#define L2_CACHE_SIZE 0x100000 // 1024KB => 1MB
+#define CACHE_LINE_SIZE 64 // 64B
 
 // Performance Monitors Control Register
 static inline u32 armv8pmu_pmcr_read(void)
@@ -48,22 +53,22 @@ static inline u32 armv8pmu_read_cache_size() {
     __asm__ volatile ("mrs %0, ccsidr_el1": "=r" (val));
     switch(val) {
     	case 0x701FE00A:
-    		printf("32 KB");
+    		printf("Cache size: 32 KB\n\n");
     		break;
     	case 0x201FE012:
-    		printf("48 KB");
+    		printf("Cache size: 48 KB\n\n");
     	    break;
     	case 0x703FE07A:
-    		printf("512 KB");
+    		printf("Cache size: 512 KB\n\n");
     	    break;
     	case 0x707FE07A:
-    	    printf("1024 KB");
+    	    printf("Cache size: 1024 KB\n\n");
     	    break;
     	case 0x70FFE07A:
-    		printf("2048 KB");
+    		printf("Cache size: 2048 KB\n\n");
     	    break;
     	case 0x71FFE07A:
-    		printf("4096 KB");
+    		printf("Cache size: 4096 KB\n\n");
     	    break;
     	default:
     	    printf("Unknown value: 0x%lx\n", val);
@@ -82,10 +87,99 @@ static inline void reset_pmuserenr_el0()
 	__asm__ volatile("msr pmuserenr_el0, %0" :: "r"(0x0));
 }
 
+u64 read_cache_misses_sequential(volatile u32 *memory, size_t size)
+{
+	u64 start, end;
+	u32 cache_misses = 0;
+	size_t i;
+
+	// Start measuring performance counter
+	start = armv8pmu_pmccntr_read();
+
+	// Sequential read
+	for (i = 0; i < size; i += CACHE_LINE_SIZE) {
+		u32 value = memory[i];
+		(void)value;
+	}
+	// Stop measuring performance counter
+	end = armv8pmu_pmccntr_read();
+
+	// Count number of cache misses
+	cache_misses = (end - start);
+
+	return cache_misses;
+}
+
+u64 read_cache_misses_random(volatile u32 *memory, size_t size)
+{
+	u64 start, end;
+	u32 cache_misses = 0;
+	size_t i;
+
+	// Start measuring performance counter
+	start = armv8pmu_pmccntr_read();
+
+	// Sequential read
+	for (i = 0; i < NUM_ACCESSES; i++) {
+		size_t index = rand() % size;
+		u32 value = memory[index];
+		(void)value;
+	}
+	// Stop measuring performance counter
+	end = armv8pmu_pmccntr_read();
+
+	// Count number of cache misses
+	cache_misses = (end - start);
+
+	return cache_misses;
+}
+
+u64 write_cache_misses_sequential(volatile u32 *memory)
+{
+	u64 start, end;
+	u32 cache_misses = 0;
+
+    start = armv8pmu_pmccntr_read();
+    for (int i = 0; i < NUM_ACCESSES; i++) {
+        volatile u32 x = memory[i % (L2_CACHE_SIZE  / sizeof(u32))];
+        (void)x; // suppress unused variable warning
+    }
+    end = armv8pmu_pmccntr_read();
+
+    // Count number of cache misses
+    cache_misses = (end - start);
+
+    return cache_misses;
+}
+
+u64 write_cache_misses_random(volatile u32 *memory)
+{
+	u64 start, end;
+	u32 cache_misses = 0;
+	unsigned long long sum = 0;
+
+	// Random access pattern
+	start = armv8pmu_pmccntr_read();
+	for (int i = 0; i < NUM_ACCESSES; i++) {
+		int rand_index = rand() % NUM_ACCESSES;
+		memory[rand_index * CACHE_LINE_SIZE] = 'a';
+	    sum += memory[rand_index * CACHE_LINE_SIZE];
+	}
+	end = armv8pmu_pmccntr_read();
+
+	// Count number of cache misses
+	cache_misses = (end - start);
+
+	return cache_misses;
+}
+
 
 int main()
 {
     init_platform();
+
+	// Initialize random seed
+	srand(12345);
 
     /* Reset pmuserenr_el0 to default */
     reset_pmuserenr_el0();
@@ -112,18 +206,47 @@ int main()
     /* start*/
     armv8pmu_pmcr_write(armv8pmu_pmcr_read() | ARMV8_PMCR_E);
 
-    int i;
-    int n = 512 * 512;
-    int *block = malloc(n * sizeof(int)); // (n * n * 8) > 1024KB (L2 size)
 
-    for (i = 0; i < n / 10; i++) {
-    	int ri = rand() % n;
-        block[ri] = 0;
-    }
+    volatile u32 *memory;
+    memory = malloc(L2_CACHE_SIZE * 10);
+    size_t size = NUM_ACCESSES * CACHE_LINE_SIZE;
 
-    u32 reg_val = armv8pmu_pmccntr_read();
-    printf("\nRegister value: %u\n", reg_val);
+    // Measure cache misses for sequential read
+    u64 read_misses_seq = read_cache_misses_sequential(memory, size);
+    printf("\nSequential read cache misses: %lu\n", read_misses_seq);
 
+    // Free the memory block
+    free((void *)memory);
+
+    memory = malloc(L2_CACHE_SIZE * 10);
+
+    // Measure cache misses for random read
+    u64 read_misses_rand = read_cache_misses_random(memory, size);
+    printf("\nRandom read cache misses: %lu\n", read_misses_rand);
+
+    // Free the memory block
+    free((void *)memory);
+
+
+    // Allocate a memory block that is larger than the L2 cache size
+    memory = malloc(L2_CACHE_SIZE * 10);
+
+    // Measure cache misses for sequential write
+    u64 write_misses_seq = write_cache_misses_sequential(memory);
+    printf("\nSequential write cache misses: %lu\n", write_misses_seq);
+
+    // Free the memory block
+    free((void *)memory);
+
+    memory = malloc(L2_CACHE_SIZE * 10);
+
+    // Measure cache misses for random write
+    u64 write_misses_rand = write_cache_misses_random(memory);
+    printf("-------------");
+    printf("\nRandom write cache misses: %lu\n", write_misses_rand);
+
+    // Free the memory block
+    free((void *)memory);
 
     cleanup_platform();
     return 0;
