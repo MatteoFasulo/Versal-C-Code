@@ -119,7 +119,7 @@ u64 read_cache_misses_random(volatile u32 *memory, size_t size)
 	// Start measuring performance counter
 	start = armv8pmu_pmccntr_read();
 
-	// Sequential read
+	// Random read
 	for (i = 0; i < NUM_ACCESSES; i++) {
 		size_t index = rand() % size;
 		u32 value = memory[index];
@@ -198,7 +198,7 @@ int main()
     __asm__ volatile("msr pmcntenset_el0, %0" :: "r" (ARMV8_PMCNTENSET_EL0_ENABLE));
 
     /* Set cache level */
-    armv8pmu_set_cache_level(2);
+    armv8pmu_set_cache_level();
 
     /* Print Cache Size (L2) */
     armv8pmu_read_cache_size();
