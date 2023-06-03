@@ -5,8 +5,8 @@
 - `bomb2.c` => two core memory bomb
 
 ### Usage
-```python
-python3 main_subgraphs_age.py --images_dir unico/ --model AgeGen/Age/Age.xmodel --membomb ~/test/membomb/main
+```sh
+python3 main_subgraphs_age.py --images_dir unico/ --model AgeGen/Age/Age.xmodel --membomb ~/test/membomb/<C_PROGRAM>
 ```
 Command-line arguments:
 - `-d IMAGES_DIR`, `--images_dir IMAGES_DIR`: Path to folder of images. Default is images.
