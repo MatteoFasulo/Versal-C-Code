@@ -1,3 +1,4 @@
+
 from ctypes import *
 from typing import List
 import csv
@@ -24,6 +25,27 @@ imgQ = queue.Queue(BUF_SIZE)
 outQ = queue.Queue(BUF_SIZE)
 
 morph_classes = ["0-19", "20-29", "30-39", "40-49", "50-100"]
+
+def response_time_csv(data, filename: str = 'response_times.csv', header: list = ['img', 'time']):
+    """
+    It creates 'csv' folder with .csv file inside.
+    Args:
+        - filename: str => name of csv file
+        - header: list => list of strings containing column names
+        - data: list of lists => each list with img_name and time
+    """
+    if not os.path.isdir('csv'):
+        os.mkdir('csv')
+
+    if header is None:
+        header = ['img', 'time']
+    
+    with open(f"csv{os.sep}{filename}", 'w', encoding='UTF8') as f:
+        writer = csv.writer(f)
+        writer.writerow(header)
+        writer.writerows(data) # writerows expects a list of lists!
+
+    return
 
 def execute_async(dpu, tensor_buffers_dict):
     input_tensor_buffers = [
@@ -64,7 +86,7 @@ def DEBUG_runDPU(dpu_1):
         print("DEBUG DONE")
 
 
-def runDPU(dpu_1, img):
+def runDPU(dpu_1, img, images_list):
     # get DPU input/output tensors
     inputTensor_1  = dpu_1.get_input_tensors()
     outputTensor_1 = dpu_1.get_output_tensors()
@@ -77,8 +99,10 @@ def runDPU(dpu_1, img):
     out1 = np.zeros([batchSize,1], dtype='int8')
 
     n_of_images = len(img)
+    response_times = []
     count = 0
     write_index = 0
+    image_index = 0
     while count < n_of_images:
         if (count+batchSize<=n_of_images):
             runSize = batchSize
@@ -97,17 +121,26 @@ def runDPU(dpu_1, img):
 
         ''' run with batch '''
         # run DPU
+        start_time = time.time()
         execute_async(
             dpu_1, {
                 "quant_input_1": imageRun,
                 "quant_dense_3_fix": out1
             })
+        end_time = time.time()
+        inference_time = end_time - start_time
+        response_times.append([images_list[image_index], inference_time]) # csv header is [img, time]
+        #print(f"\nInference time (execute async): {inference_time:.4f} seconds\n")
         cnn_out = out1.copy()
         '''store output vectors '''
         for j in range(runSize):
             out_q[write_index] = cnn_out[0][j]
             write_index += 1
         count = count + runSize
+
+        image_index += 1
+
+    return response_times
 
 #def app(images_dir,threads,model_name):
 def app(images_dir,model_name):
@@ -157,7 +190,7 @@ def app(images_dir,model_name):
     end = len(img)
     in_q = img[start:end]
     time1 = time.time()
-    runDPU(dpu_1, img)
+    response_times = runDPU(dpu_1, img, images_list)
     time2 = time.time()
     timetotal = time2 - time1
     fps = float(runTotal / timetotal)
@@ -203,7 +236,8 @@ def app(images_dir,model_name):
     accuracy = correct/len(out_q)
     print(f"Correct: {correct}  Wrong: {wrong}  Accuracy: {accuracy}  DPU Exec Time: {timetotal:.4f} seconds")
     file.close()
-    return
+
+    return response_times
 
 
 
@@ -228,7 +262,9 @@ def main():
 
   print("\n")
 
-  app(args.images_dir,args.model)
+  response_times = app(args.images_dir,args.model)
+  csv_filename = f"{args.model.split('/')[-1]}"
+  csv_header = None
 
   if args.membomb:
       pid = proc.pid
@@ -238,6 +274,13 @@ def main():
         print("\nProcess with PID", pid, "is running.\n")
       else:
         print("\nProcess with PID", pid, "is not running.\n")
+      
+      csv_filename += f"_{args.membomb.split('/')[-1]}"
+      csv_header = ["img", f"time_{args.membomb.split('/')[-1]}"]
+
+  csv_filename += ".csv"
+
+  response_time_csv(filename=csv_filename, header=csv_header, data=response_times)
 
 
 if __name__ == '__main__':
