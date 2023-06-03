@@ -1,8 +1,8 @@
 # Versal-C-Code
 
 ### Memory Bomb
-`bomb1.c` => single core memory bomb
-`bomb2.c` => two core memory bomb
+- `bomb1.c` => single core memory bomb
+- `bomb2.c` => two core memory bomb
 
 ### Usage
 ```python
