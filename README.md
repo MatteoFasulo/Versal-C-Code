@@ -8,7 +8,7 @@
 `test_inference` folder contains 100 images to test the response times:
 
 ```sh
-python3 main_subgraphs_age.py --images_dir test_inference/ --model AgeGen/Age/Age.xmodel
+python3 main_subgraphs_age.py --images_dir test_inference/ --model AgeGen/Age/Age.xmodel --membomb ~/test/membomb/{bomb1,bomb2}
 ```
 >**Info** there will be a `csv` folder with csv files of response times. 
 The program will create a csv file named **<MODEL_NAME>_<MEM_BOMB_TYPE>.csv**. 
