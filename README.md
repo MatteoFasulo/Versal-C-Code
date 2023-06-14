@@ -7,8 +7,8 @@
     - [Download](https://www.xilinx.com/bin/public/openDownload?filename=resnet50-vck190-r3.0.0.tar.gz)
 
 ### Usage
-`test_inference` folder contains 100 images to test the response times:
-- `test_inference/` => 100 images
+[test_inference](code/test_inference/) folder contains 100 images to test the response times:
+- [test_inference](code/test_inference/) => 100 images
 - `unico/` => 1 image
 
 ```sh
@@ -26,10 +26,10 @@ Command-line arguments:
 - `-t THREAD`, `--thread THREAD`: Number of threads. Default is 1. Only for ResNet50
 
 ### C programs
-- `bomb1.c` => single core memory bomb without priority
-- `bomb1_nice.c` => single core memory bomb with priority
-- `bomb2.c` => two core memory bomb without priority
-- `bomb2_nice.c` => two core memory bomb with priority
+- [bomb1.c](code/bomb1.c) => single core memory bomb without priority
+- [bomb1_nice.c](code/bomb1_nice.c) => single core memory bomb with priority
+- [bomb2.c](code/bomb2.c) => two core memory bomb without priority
+- [bomb2_nice.c](code/bomb2_nice.c) => two core memory bomb with priority
 
 ### Python scripts
 - [Age detection model](code/main_subgraphs_age.py) => Age detection model
