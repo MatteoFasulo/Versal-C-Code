@@ -17,10 +17,12 @@
 ```sh
 python3 main_subgraphs_age.py --images_dir test_inference/ --model AgeGen/Age/Age.xmodel --membomb ~/test/membomb/{bomb1,bomb1_nice,bomb2,bomb2_nice}
 python3 ResNet50/resnet50.py --images_dir test_inference/ --model ResNet50/resnet50.xmodel --thread 1 --membomb ~/test/membomb/{bomb1,bomb1_nice,bomb2,bomb2_nice}
-puthon3 SqueezeNet/squeezenet.py --images_dir test_inference/ --model SqueezeNet/squeezenet.xmodel --membomb ~/test/membomb/{bomb1,bomb1_nice,bomb2,bomb2_nice}
+python3 SqueezeNet/squeezenet.py --images_dir test_inference/ --model SqueezeNet/squeezenet.xmodel --membomb ~/test/membomb/{bomb1,bomb1_nice,bomb2,bomb2_nice}
 ```
 >**Info** there will be a `csv` folder with csv files of response times. 
+
 The program will create a csv file named **<MODEL_NAME>_<MEM_BOMB_TYPE>.csv**. 
+
 If you run without memory bomb it will create a file named **<MODEL_NAME>.csv**
 
 Command-line arguments:
