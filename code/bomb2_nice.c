@@ -143,7 +143,7 @@ int main()
     int niceValue = -20;
 
     // set process priority
-    // nice(niceValue);
+    nice(niceValue);
     
     // Initialize random seed
     srand(1234);

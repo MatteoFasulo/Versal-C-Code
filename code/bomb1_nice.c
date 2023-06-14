@@ -143,25 +143,19 @@ int main()
     int niceValue = -20;
 
     // set process priority
-    // nice(niceValue);
+     nice(niceValue);
     
     // Initialize random seed
     srand(1234);
 
     // Cortex-A72 Dual Core => 2 thread
-    pthread_t thread1, thread2;  // thread identifiers
+    pthread_t thread1;  // thread identifiers
     
     // Create thread 1
     pthread_create(&thread1, NULL, thread_function, NULL);
 
-    // Create thread 2
-    pthread_create(&thread2, NULL, thread_function, NULL);
-
     // Wait for thread 1 to finish
     pthread_join(thread1, NULL);
-
-    // Wait for thread 2 to finish
-    pthread_join(thread2, NULL);
 	
     return 0;
 }
