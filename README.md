@@ -4,7 +4,10 @@
 - `AgeGen/Age/Age.xmodel` => Age detection model
 - `ResNet50/resnet50.xmodel` => ResNet50 model
     - [Model Zoo](https://github.com/Xilinx/Vitis-AI/blob/c55b7565bde608dd65dda94abea154ad7db4d594/model_zoo/model-list/pt_resnet50_imagenet_224_224_8.2G_3.0/model.yaml)
-    - [Download](https://www.xilinx.com/bin/public/openDownload?filename=resnet50-vck190-r3.0.0.tar.gz)
+    - [Download](https://www.xilinx.com/bin/public/openDownload?filename=resnet50-vck190-r2.0.0.tar.gz)
+- `SqueezeNet/squeezenet.xmodel` => SqueezeNet model
+    - [Model Zoo](https://github.com/Xilinx/Vitis-AI/tree/c55b7565bde608dd65dda94abea154ad7db4d594/examples/vai_runtime/squeezenet_pytorch)
+    - [Download](https://www.xilinx.com/bin/public/openDownload?filename=squeezenet_pt-vck190-r2.0.0.tar.gz)
 
 ### Usage
 [test_inference](code/test_inference/) folder contains 100 images to test the response times:
@@ -14,6 +17,7 @@
 ```sh
 python3 main_subgraphs_age.py --images_dir test_inference/ --model AgeGen/Age/Age.xmodel --membomb ~/test/membomb/{bomb1,bomb1_nice,bomb2,bomb2_nice}
 python3 ResNet50/resnet50.py --images_dir test_inference/ --model ResNet50/resnet50.xmodel --thread 1 --membomb ~/test/membomb/{bomb1,bomb1_nice,bomb2,bomb2_nice}
+puthon3 SqueezeNet/squeezenet.py --images_dir test_inference/ --model SqueezeNet/squeezenet.xmodel --membomb ~/test/membomb/{bomb1,bomb1_nice,bomb2,bomb2_nice}
 ```
 >**Info** there will be a `csv` folder with csv files of response times. 
 The program will create a csv file named **<MODEL_NAME>_<MEM_BOMB_TYPE>.csv**. 
@@ -22,8 +26,8 @@ If you run without memory bomb it will create a file named **<MODEL_NAME>.csv**
 Command-line arguments:
 - `-d IMAGES_DIR`, `--images_dir IMAGES_DIR`: Path to folder of images. Default is images.
 - `-m MODEL`, `--model MODEL`: Path of xmodel. Default is CNN.xmodel
-- `-b MEMBOMB`, `--membomb MEMBOMB`: Path to memory bomb C program. Default to False
-- `-t THREAD`, `--thread THREAD`: Number of threads. Default is 1. Only for ResNet50
+- `-b MEMBOMB`, `--membomb MEMBOMB`: Path to memory bomb C program. Default to False.
+- `-t THREAD`, `--thread THREAD`: Number of threads. Default is 1. Only for ResNet50 and SqueezeNet.
 
 ### C programs
 - [bomb1.c](code/bomb1.c) => single core memory bomb without priority
@@ -34,6 +38,7 @@ Command-line arguments:
 ### Python scripts
 - [Age detection model](code/main_subgraphs_age.py) => Age detection model
 - [ResNet50](code/resnet50.py) => ResNet50 model
+- [SqueezeNet](code/squeezenet.py) => SqueezeNet model
 
 ### GCC
 Compile the C program with pthread
