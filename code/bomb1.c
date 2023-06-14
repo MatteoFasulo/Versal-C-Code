@@ -9,7 +9,7 @@ typedef uint64_t u64;
 typedef uint32_t u32;
 typedef uint8_t u8;
 
-#define NUM_ACCESSES 10000
+#define NUM_ACCESSES 100000
 #define L2_CACHE_SIZE 0x100000 // 1024KB => 1MB
 #define CACHE_LINE_SIZE 64     // 64B
 
@@ -143,7 +143,7 @@ int main()
     int niceValue = -20;
 
     // set process priority
-    nice(niceValue);
+    // nice(niceValue);
     
     // Initialize random seed
     srand(1234);
