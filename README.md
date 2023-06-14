@@ -22,8 +22,9 @@ python3 SqueezeNet/squeezenet.py --images_dir test_inference/ --model SqueezeNet
 >**Info** there will be a `csv` folder with csv files of response times. 
 
 The program will create a csv file named **<MODEL_NAME>_<MEM_BOMB_TYPE>.csv**. 
-
 If you run without memory bomb it will create a file named **<MODEL_NAME>.csv**
+
+### Command-line arguments
 
 Command-line arguments:
 - `-d IMAGES_DIR`, `--images_dir IMAGES_DIR`: Path to folder of images. Default is images.
