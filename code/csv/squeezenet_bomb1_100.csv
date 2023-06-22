@@ -1,0 +1,15 @@
+Profile Summary
+Generated on: 2023-06-22 08:39:11
+XRT build version: 0.0.0
+Build version branch: N/A
+Build version hash: N/A
+Build version date: N/A
+Target devices: N/A
+
+DPU Summary
+Kernel Name,Number Of Runs,CU Full Name,Minimum Time (ms),Average Time (ms),Maximum Time (ms),Workload(GOP),DPU Performance(GOP/s),Mem IO(MB),Mem Bandwidth(MB/s),
+subgraph_SqueezeNet__SqueezeNet_3041,100,DPUCVDX8G_1:batch-1,0.668,0.675,0.712,0.704,1043.214,3.257,4941.433,
+vart::TensorBuffer::copy_tensor_buffer,200,CPU,0.020,0.045,0.141,
+xir::XrtCu::run,100,CPU,0.662,0.669,0.702,
+runSqueezeNet,1,CPU,96.670,96.670,96.670,
+

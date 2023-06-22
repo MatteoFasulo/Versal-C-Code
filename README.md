@@ -1,5 +1,55 @@
 # Versal-C-Code
 
+### Table of Contents
+- [Introduction](#introduction)
+- [Models](#models)
+- [Usage](#usage)
+- [Command-line arguments](#command-line-arguments)
+- [C programs](#c-programs)
+- [Python scripts](#python-scripts)
+- [GCC](#gcc)
+- [Known issues](#Known-issues)
+- [References](#references)
+
+### Introduction
+
+BSc Thesis: Evaluation of timing performance of Deep Neural Networks workloads accelerated on Versal AI Engine in presence of contention on shared resources.
+
+This repository contains the code used to test the inference time of the models on the Versal AI Engine.
+
+The code is divided into 3 folders:
+- [AgeGen](code/AgeGen/) => Age detection model
+- [ResNet50](code/ResNet50/) => ResNet50 model
+- [SqueezeNet](code/SqueezeNet/) => SqueezeNet model
+
+The code is divided into 2 parts:
+- [C programs](code/) => C programs to force memory access and CPU usage
+- [Python scripts](code/) => Python scripts to run the models on the Versal AI Engine
+
+Vitis AI Profiler aka vaitrace was used to profile the models. The DPU profiling results are available in the [csv](csv/) folder. The profiling results are divided according to the model they refer to. 
+
+In order to profile the models, the following command was used:
+```sh
+vaitrace -c <CONFIG.json> -p --va ./<PYTHON_SCRIPT.py> 
+``` 
+where:
+- `<PYTHON_SCRIPT.py>` => Python script to run the model
+- ` -c  <CONFIG.json>` => configuration file
+- `-p` => Trace python application
+- `--va` => Generate trace data for Vitis Analyzer
+
+<CONFIG.json> => configuration file:
+```json
+{
+    "trace": {
+        "enable_trace_list": ["vart", "vitis-ai-library", "opencv", "custom"]
+    },
+    "trace_custom": ["<FUNCTION_NAME>"]
+}
+```
+where:
+- `<FUNCTION_NAME>` => python function to trace
+
 ### Models
 - `AgeGen/Age/Age.xmodel` => Age detection model
 - `ResNet50/resnet50.xmodel` => ResNet50 model
@@ -12,17 +62,12 @@
 ### Usage
 [test_inference](code/test_inference/) folder contains 100 images to test the response times:
 - [test_inference](code/test_inference/) => 100 images
-- `unico/` => 1 image
 
 ```sh
 python3 main_subgraphs_age.py --images_dir test_inference/ --model AgeGen/Age/Age.xmodel --membomb ~/test/membomb/{bomb1,bomb1_nice,bomb2,bomb2_nice}
-python3 ResNet50/resnet50.py --images_dir test_inference/ --model ResNet50/resnet50.xmodel --thread 1 --membomb ~/test/membomb/{bomb1,bomb1_nice,bomb2,bomb2_nice}
+python3 ResNet50/resnet50.py --images_dir test_inference/ --model ResNet50/resnet50.xmodel --membomb ~/test/membomb/{bomb1,bomb1_nice,bomb2,bomb2_nice}
 python3 SqueezeNet/squeezenet.py --images_dir test_inference/ --model SqueezeNet/squeezenet.xmodel --membomb ~/test/membomb/{bomb1,bomb1_nice,bomb2,bomb2_nice}
 ```
->**Info** there will be a `csv` folder with csv files of response times. 
-
-The program will create a csv file named **<MODEL_NAME>_<MEM_BOMB_TYPE>.csv**. 
-If you run without memory bomb it will create a file named **<MODEL_NAME>.csv**
 
 ### Command-line arguments
 
@@ -49,13 +94,7 @@ Compile the C program with pthread
 gcc -pthread <FILE.C> -o <OUTPUT>
 ```
 
-### Xilinx Vitis-AI
-Compile the xmodel with Vitis-AI
-```sh
-vai_c_tensorflow2 -m <MODEL.H5> -a <ARCH.JSON> -o <OUTPUT>
-```
-
-### Model and DPU fingerprint check failed
+### Known issues
 If you get this error:
 ```sh
 CHECK fingerprint fail ! model_fingerprint 0x602001036088231 dpu_fingerprint 0x602001036088211
@@ -65,5 +104,25 @@ Set the environment variable `XLNX_ENABLE_FINGERPRINT_CHECK` to `0`:
 export XLNX_ENABLE_FINGERPRINT_CHECK=0
 ```
 
+If you get this error:
+```sh
+[dpu_control_xrt_xv_dpu.cpp:193] dpu timeout! core_idx = 0 ...
+```
+
+You will need to create a bash script and execute it as soon as Versal is powered on:
+```sh
+#!/bin/bash
+for i in {0..39}; do
+    for j in {1..8}; do
+        a=0x20000000000
+        b=0x31000
+        devmem $[a+b+(i<<23)+(j<<18)] 32 0
+    done
+done
+```
+> **Important**: The script must be executed as root and before running any DPU operation.
+
+
 ### References
+- [[dpu_control_xrt_xv_dpu.cpp:193] dpu timeout! core_idx = 0](https://github.com/Xilinx/Vitis-AI/issues/576#issuecomment-957238529)
 - [DPU-Fingerprint-Error](https://github.com/Xilinx/Vitis-AI/issues/975#issuecomment-1223452542)

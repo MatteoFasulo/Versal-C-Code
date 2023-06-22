@@ -28,39 +28,8 @@ import sys
 import csv
 import subprocess
 import argparse
+from vaitrace_py import vai_tracepoint
 
-
-def response_time_csv(data, filename: str = 'response_times.csv', header: list = ['img', 'time']):
-    """
-    It creates 'csv' folder with .csv file inside.
-    Args:
-        - filename: str => name of csv file
-        - header: list => list of strings containing column names
-        - data: list of lists => each list with img_name and time
-    """
-    if not os.path.isdir('csv'):
-        os.mkdir('csv')
-
-    if header is None:
-        header = ['img', 'time']
-
-    with open(f"csv{os.sep}{filename}", 'w', encoding='UTF8') as f:
-        writer = csv.writer(f)
-        writer.writerow(header)
-        writer.writerows(data) # writerows expects a list of lists!
-
-    return
-
-class CustomThread(Thread):
-    def __init__(self, group=None, target=None, name=None,
-                 args=(), kwargs={}):
-        Thread.__init__(self, group, target, name, args, kwargs)
-    def run(self):
-        if self._target != None:
-            self._return = self._target(*self._args, **self._kwargs)
-    def join(self, *args):
-        Thread.join(self, *args)
-        return self._return
 
 """
 Calculate softmax
@@ -142,7 +111,8 @@ cnt: threadnum
 """
 
 
-def runResnet50(runner: "Runner", img, images_list):
+@vai_tracepoint
+def runResnet50(runner: "Runner", img):
     """get tensor"""
     inputTensors = runner.get_input_tensors()
     outputTensors = runner.get_output_tensors()
@@ -157,9 +127,7 @@ def runResnet50(runner: "Runner", img, images_list):
     output_scale = 1 / (2**output_fixpos)
 
     n_of_images = len(img)
-    response_times = []
     count = 0
-    image_index = 0
     while count < n_of_images:
         if (count+batchSize<=n_of_images):
             runSize = batchSize
@@ -173,12 +141,8 @@ def runResnet50(runner: "Runner", img, images_list):
             imageRun = inputData[0]
             imageRun[j, ...] = img[(count + j) % n_of_images].reshape(input_ndim[1:])
         """run with batch """
-        start_time = time.time()
         job_id = runner.execute_async(inputData, outputData)
         runner.wait(job_id)
-        end_time = time.time()
-        inference_time = end_time - start_time
-        response_times.append([images_list[image_index], inference_time])
         """softmax&TopK calculate with batch """
         """Benchmark DPU FPS performance over Vitis AI APIs execute_async() and wait() """
         """Uncomment the following code snippet to include softmax calculation for model’s end-to-end FPS evaluation """
@@ -187,10 +151,6 @@ def runResnet50(runner: "Runner", img, images_list):
         #    TopK(softmax, pre_output_size, "./words.txt")
 
         count = count + runSize
-
-        image_index += 1
-
-    return response_times
 
 """
  obtain dpu subgrah
@@ -270,17 +230,15 @@ def main():
     """run with batch """
     time_start = time.time()
     for i in range(int(threadnum)):
-        t1 = CustomThread(target=runResnet50, args=(all_dpu_runners[i], img, listimage))
+        t1 = Thread(target=runResnet50, args=(all_dpu_runners[i], img))
         threadAll.append(t1)
     for x in threadAll:
         x.start()
     for x in threadAll:
-        response_times = x.join()
+        x.join()
 
     del all_dpu_runners
 
-    csv_filename = f"{args.model.split('/')[-1]}"
-    csv_header = None
 
     if args.membomb:
         pid = proc.pid
@@ -291,16 +249,9 @@ def main():
         else:
             print("\nProcess with PID", pid, "is not running.\n")
 
-        csv_filename += f"_{args.membomb.split('/')[-1]}"
-        csv_header = ["img", f"time_{args.membomb.split('/')[-1]}"]
-
-    csv_filename += ".csv"
-
-    response_time_csv(filename=csv_filename, header=csv_header, data=response_times)
-
     time_end = time.time()
     timetotal = time_end - time_start
-    total_frames = len(listimage)
+    total_frames = int(threadnum)
     fps = float(total_frames / timetotal)
     print(
         "FPS=%.2f, total frames = %.2f , time=%.6f seconds"

@@ -15,6 +15,7 @@ import queue
 #from hashlib import md5
 import argparse
 import subprocess
+from vaitrace_py import vai_tracepoint
 
 
 DEBUG = False
@@ -86,6 +87,7 @@ def DEBUG_runDPU(dpu_1):
         print("DEBUG DONE")
 
 
+@vai_tracepoint
 def runDPU(dpu_1, img, images_list):
     # get DPU input/output tensors
     inputTensor_1  = dpu_1.get_input_tensors()
@@ -263,8 +265,8 @@ def main():
   print("\n")
 
   response_times = app(args.images_dir,args.model)
-  csv_filename = f"{args.model.split('/')[-1]}"
-  csv_header = None
+  #csv_filename = f"{args.model.split('/')[-1]}"
+  #csv_header = None
 
   if args.membomb:
       pid = proc.pid
@@ -275,12 +277,12 @@ def main():
       else:
         print("\nProcess with PID", pid, "is not running.\n")
       
-      csv_filename += f"_{args.membomb.split('/')[-1]}"
-      csv_header = ["img", f"time_{args.membomb.split('/')[-1]}"]
+      #csv_filename += f"_{args.membomb.split('/')[-1]}"
+      #csv_header = ["img", f"time_{args.membomb.split('/')[-1]}"]
 
-  csv_filename += ".csv"
+  #csv_filename += ".csv"
 
-  response_time_csv(filename=csv_filename, header=csv_header, data=response_times)
+  #response_time_csv(filename=csv_filename, header=csv_header, data=response_times)
 
 
 if __name__ == '__main__':

@@ -28,6 +28,7 @@ import sys
 import csv
 import subprocess
 import argparse
+from vaitrace_py import vai_tracepoint
 
 
 def response_time_csv(data, filename: str = 'response_times.csv', header: list = ['img', 'time']):
@@ -142,6 +143,7 @@ cnt: threadnum
 """
 
 
+@vai_tracepoint
 def runSqueezeNet(runner: "Runner", img, images_list):
     """get tensor"""
     inputTensors = runner.get_input_tensors()
@@ -157,9 +159,9 @@ def runSqueezeNet(runner: "Runner", img, images_list):
     output_scale = 1 / (2**output_fixpos)
 
     n_of_images = len(img)
-    response_times = []
+    #response_times = []
     count = 0
-    image_index = 0
+    #image_index = 0
     while count < n_of_images:
         if (count+batchSize<=n_of_images):
             runSize = batchSize
@@ -173,12 +175,12 @@ def runSqueezeNet(runner: "Runner", img, images_list):
             imageRun = inputData[0]
             imageRun[j, ...] = img[(count + j) % n_of_images].reshape(input_ndim[1:])
         """run with batch """
-        start_time = time.time()
+        #start_time = time.time()
         job_id = runner.execute_async(inputData, outputData)
         runner.wait(job_id)
-        end_time = time.time()
-        inference_time = end_time - start_time
-        response_times.append([images_list[image_index], inference_time])
+        #end_time = time.time()
+        #inference_time = end_time - start_time
+        #response_times.append([images_list[image_index], inference_time])
         """softmax&TopK calculate with batch """
         """Benchmark DPU FPS performance over Vitis AI APIs execute_async() and wait() """
         """Uncomment the following code snippet to include softmax calculation for model’s end-to-end FPS evaluation """
@@ -188,9 +190,9 @@ def runSqueezeNet(runner: "Runner", img, images_list):
 
         count = count + runSize
 
-        image_index += 1
+        #image_index += 1
 
-    return response_times
+    #return response_times
 
 """
  obtain dpu subgrah
@@ -270,7 +272,7 @@ def main():
     """run with batch """
     time_start = time.time()
     for i in range(int(threadnum)):
-        t1 = CustomThread(target=runSqueezeNet, args=(all_dpu_runners[i], img, listimage))
+        t1 = Thread(target=runSqueezeNet, args=(all_dpu_runners[i], img, listimage))
         threadAll.append(t1)
     for x in threadAll:
         x.start()
@@ -279,8 +281,8 @@ def main():
 
     del all_dpu_runners
 
-    csv_filename = f"{args.model.split('/')[-1]}"
-    csv_header = None
+    #csv_filename = f"{args.model.split('/')[-1]}"
+    #csv_header = None
 
     if args.membomb:
         pid = proc.pid
@@ -291,12 +293,12 @@ def main():
         else:
             print("\nProcess with PID", pid, "is not running.\n")
 
-        csv_filename += f"_{args.membomb.split('/')[-1]}"
-        csv_header = ["img", f"time_{args.membomb.split('/')[-1]}"]
+        #csv_filename += f"_{args.membomb.split('/')[-1]}"
+        #csv_header = ["img", f"time_{args.membomb.split('/')[-1]}"]
 
-    csv_filename += ".csv"
+    #csv_filename += ".csv"
 
-    response_time_csv(filename=csv_filename, header=csv_header, data=response_times)
+    #response_time_csv(filename=csv_filename, header=csv_header, data=response_times)
 
     time_end = time.time()
     timetotal = time_end - time_start
