@@ -18,15 +18,15 @@ BSc Thesis: Evaluation of timing performance of Deep Neural Networks workloads a
 This repository contains the code used to test the inference time of the models on the Versal AI Engine.
 
 The code is divided into 3 folders:
-- [AgeGen](code/AgeGen/) => Age detection model
-- [ResNet50](code/ResNet50/) => ResNet50 model
-- [SqueezeNet](code/SqueezeNet/) => SqueezeNet model
+- [AgeGen](code/Python/main_subgraphs_age.py) => Age detection model
+- [ResNet50](code/Python/resnet50.py) => ResNet50 model
+- [SqueezeNet](code/Python/squeezenet.py) => SqueezeNet model
 
 The code is divided into 2 parts:
-- [C programs](code/) => C programs to force memory access and CPU usage
-- [Python scripts](code/) => Python scripts to run the models on the Versal AI Engine
+- [C programs](code/C/) => C programs to force memory access and CPU usage
+- [Python scripts](code/Python/) => Python scripts to run the models on the Versal AI Engine
 
-Vitis AI Profiler aka vaitrace was used to profile the models. The DPU profiling results are available in the [csv](csv/) folder. The profiling results are divided according to the model they refer to. 
+Vitis AI Profiler aka vaitrace was used to profile the models. The DPU profiling results are available in the [csv](code/csv/) folder. The profiling results are divided according to the model they refer to. 
 
 In order to profile the models, the following command was used:
 ```sh
@@ -78,15 +78,15 @@ Command-line arguments:
 - `-t THREAD`, `--thread THREAD`: Number of threads. Default is 1. Only for ResNet50 and SqueezeNet.
 
 ### C programs
-- [bomb1.c](code/bomb1.c) => single core memory bomb without priority
-- [bomb1_nice.c](code/bomb1_nice.c) => single core memory bomb with priority
-- [bomb2.c](code/bomb2.c) => two core memory bomb without priority
-- [bomb2_nice.c](code/bomb2_nice.c) => two core memory bomb with priority
+- [bomb1.c](code/C/bomb1.c) => single core memory bomb without priority
+- [bomb1_nice.c](code/C/bomb1_nice.c) => single core memory bomb with priority
+- [bomb2.c](code/C/bomb2.c) => two core memory bomb without priority
+- [bomb2_nice.c](code/C/bomb2_nice.c) => two core memory bomb with priority
 
 ### Python scripts
-- [Age detection model](code/main_subgraphs_age.py) => Age detection model
-- [ResNet50](code/resnet50.py) => ResNet50 model
-- [SqueezeNet](code/squeezenet.py) => SqueezeNet model
+- [Age detection model](code/Python/main_subgraphs_age.py) => Age detection model
+- [ResNet50](code/Python/resnet50.py) => ResNet50 model
+- [SqueezeNet](code/Python/squeezenet.py) => SqueezeNet model
 
 ### GCC
 Compile the C program with pthread
