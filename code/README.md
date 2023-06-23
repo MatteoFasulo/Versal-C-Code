@@ -14,8 +14,6 @@ On the other hand, AgeNet, which is a custom VGG16-based network, exhibits a slo
 
 The distinction between the two types of memory bombs, one with priority given to the scheduler and the other without, does not show any significant differences in terms of slowdown. This suggests that the scheduling priority does not have a substantial impact on the observed slowdown factors.
 
-In summary, the dataframe showcases the relative slowdown factors experienced by different neural network models in the Versal VCK190 system when confronted with memory-intensive tasks. SqueezeNet, being the lightest model, is most affected, experiencing a slowdown of approximately 35 times, while AgeNet, a heavier model, exhibits a slowdown of around 4 times. The scheduler's priority in memory access does not seem to influence the slowdown significantly.
-
 
 
 ##  Age detection model
