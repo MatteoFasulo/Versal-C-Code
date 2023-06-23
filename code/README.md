@@ -4,7 +4,9 @@
 
 The following chart displays the slowdown factor of Deep Neural Networks models accelerated on Versal AI Engine in presence of contention on shared resources.
 
-![Slowdown factor comparison](img/slowdown_factor_comparison.png)
+<p align="center">
+  <img src="img/slowdown_factor_comparison.png" alt="Slowdown factor comparison" width="60%">
+</p>
 
 Among the models listed, SqueezeNet demonstrates the highest slowdown factor, approximately 35 times slower compared to the baseline. This means that SqueezeNet experiences a significant degradation in performance when accessing shared resources, particularly due to its lightweight architecture. SqueezeNet has the fewest parameters, only 5 MB, among all the models considered.
 
@@ -18,16 +20,22 @@ In summary, the dataframe showcases the relative slowdown factors experienced by
 
 ##  Age detection model
 
-![Age Model](img/age_model.png)
+<p align="center">
+  <img src="img/age_model.png" alt="Age Model" width="60%">
+</p>
 
 
 
 ##  ResNet50 model
 
-![ResNet50 Model](img/resnet_model.png)
+<p align="center">
+  <img src="img/resnet_model.png" alt="ResNet50 Model" width="60%">
+</p>
 
 
 
 ##  SqueezeNet model
 
-![SqueezeNet Model](img/squeezenet_model.png)
+<p align="center">
+  <img src="img/squeezenet_model.png" alt="SqueezeNet Model" width="60%">
+</p>
