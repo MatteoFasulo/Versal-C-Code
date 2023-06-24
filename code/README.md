@@ -15,6 +15,15 @@ On the other hand, AgeNet, which is a custom VGG16-based network, exhibits a slo
 The distinction between the two types of memory bombs, one with priority given to the scheduler and the other without, does not show any significant differences in terms of slowdown. This suggests that the scheduling priority does not have a substantial impact on the observed slowdown factors.
 
 
+## Spearman's rank correlation coefficient
+
+The following chart displays the Spearman's rank correlation coefficient of Deep Neural Networks models trace measurements in presence of contention on shared resources.
+
+<p align="center">
+  <img src="img/corr.png" alt="Spearman's rank correlation coefficient" width="60%">
+</p>
+
+
 
 ##  Age detection model
 
